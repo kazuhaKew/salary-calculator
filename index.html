@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор зарплаты с расходами</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .expense-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .expense-section h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .expense-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .expense-input-group input {
+            flex: 1;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-add {
+            background: #667eea;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-add:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .expense-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .expense-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .expense-info {
+            flex: 1;
+        }
+
+        .expense-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .expense-amount {
+            color: #e74c3c;
+            font-weight: 700;
+        }
+
+        .btn-remove {
+            background: #e74c3c;
+            color: white;
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+
+        .btn-remove:hover {
+            background: #c0392b;
+        }
+
+        .results {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 12px;
+            color: white;
+            margin-top: 25px;
+        }
+
+        .results h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+            font-size: 20px;
+            font-weight: 700;
+            padding-top: 15px;
+        }
+
+        .result-label {
+            font-weight: 500;
+        }
+
+        .result-value {
+            font-weight: 700;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 Калькулятор зарплаты с расходами</h1>
+        
+        <div class="input-group">
+            <label for="salary">Зарплата (₽)</label>
+            <input type="number" id="salary" placeholder="Введите вашу зарплату" min="0">
+        </div>
+
+        <div class="expense-section">
+            <h2>➕ Расходы</h2>
+            <div class="expense-input-group">
+                <input type="text" id="expenseName" placeholder="Название расхода">
+                <input type="number" id="expenseAmount" placeholder="Сумма" min="0">
+            </div>
+            <button class="btn-add" onclick="addExpense()">Добавить расход</button>
+            
+            <ul class="expense-list" id="expenseList">
+                <li class="empty-message">Расходы не добавлены</li>
+            </ul>
+        </div>
+
+        <div class="results">
+            <h2>📊 Итоги</h2>
+            <div class="result-row">
+                <span class="result-label">Зарплата:</span>
+                <span class="result-value" id="totalSalary">0 ₽</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Всего расходов:</span>
+                <span class="result-value" id="totalExpenses">0 ₽</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Остаток:</span>
+                <span class="result-value" id="netAmount">0 ₽</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let expenses = [];
+
+        // Load expenses from localStorage on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedExpenses = localStorage.getItem('expenses');
+            const savedSalary = localStorage.getItem('salary');
+            
+            if (savedExpenses) {
+                try {
+                    expenses = JSON.parse(savedExpenses);
+                    // Validate that expenses is an array
+                    if (!Array.isArray(expenses)) {
+                        expenses = [];
+                    }
+                    renderExpenses();
+                } catch (e) {
+                    console.error('Failed to parse saved expenses:', e);
+                    expenses = [];
+                }
+            }
+            
+            if (savedSalary) {
+                document.getElementById('salary').value = savedSalary;
+            }
+            
+            updateResults();
+        });
+
+        // Save to localStorage
+        function saveToLocalStorage() {
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+            localStorage.setItem('salary', document.getElementById('salary').value);
+        }
+
+        // Add expense
+        function addExpense() {
+            const name = document.getElementById('expenseName').value.trim();
+            const amount = parseFloat(document.getElementById('expenseAmount').value) || 0;
+
+            if (name === '') {
+                alert('Пожалуйста, введите название расхода');
+                return;
+            }
+
+            if (amount <= 0) {
+                alert('Пожалуйста, введите сумму больше 0');
+                return;
+            }
+
+            expenses.push({ name, amount });
+            
+            // Clear inputs
+            document.getElementById('expenseName').value = '';
+            document.getElementById('expenseAmount').value = '';
+
+            saveToLocalStorage();
+            renderExpenses();
+            updateResults();
+        }
+
+        // Remove expense
+        function removeExpense(index) {
+            expenses.splice(index, 1);
+            saveToLocalStorage();
+            renderExpenses();
+            updateResults();
+        }
+
+        // Render expenses list
+        function renderExpenses() {
+            const expenseList = document.getElementById('expenseList');
+            
+            // Clear existing list safely
+            expenseList.replaceChildren();
+            
+            if (expenses.length === 0) {
+                const li = document.createElement('li');
+                li.className = 'empty-message';
+                li.textContent = 'Расходы не добавлены';
+                expenseList.appendChild(li);
+                return;
+            }
+            
+            // Create elements safely without innerHTML to prevent XSS
+            expenses.forEach((expense, index) => {
+                const li = document.createElement('li');
+                li.className = 'expense-item';
+                
+                const expenseInfo = document.createElement('div');
+                expenseInfo.className = 'expense-info';
+                
+                const expenseName = document.createElement('div');
+                expenseName.className = 'expense-name';
+                expenseName.textContent = expense.name; // Safe: uses textContent
+                
+                const expenseAmount = document.createElement('div');
+                expenseAmount.className = 'expense-amount';
+                expenseAmount.textContent = expense.amount.toFixed(2) + ' ₽'; // Safe: uses textContent
+                
+                expenseInfo.appendChild(expenseName);
+                expenseInfo.appendChild(expenseAmount);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'btn-remove';
+                removeBtn.textContent = 'Удалить';
+                removeBtn.onclick = function() { removeExpense(index); };
+                
+                li.appendChild(expenseInfo);
+                li.appendChild(removeBtn);
+                
+                expenseList.appendChild(li);
+            });
+        }
+
+        // Update results
+        function updateResults() {
+            const salary = parseFloat(document.getElementById('salary').value) || 0;
+            const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const netAmount = salary - totalExpenses;
+
+            document.getElementById('totalSalary').textContent = salary.toFixed(2) + ' ₽';
+            document.getElementById('totalExpenses').textContent = totalExpenses.toFixed(2) + ' ₽';
+            document.getElementById('netAmount').textContent = netAmount.toFixed(2) + ' ₽';
+        }
+
+        // Update results when salary changes
+        document.getElementById('salary').addEventListener('input', function() {
+            saveToLocalStorage();
+            updateResults();
+        });
+
+        // Allow pressing Enter to add expense
+        document.getElementById('expenseName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('expenseAmount').focus();
+            }
+        });
+
+        document.getElementById('expenseAmount').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addExpense();
+            }
+        });
+    </script>
+</body>
+</html>
