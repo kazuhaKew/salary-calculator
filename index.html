@@ -242,8 +242,17 @@
             const savedSalary = localStorage.getItem('salary');
             
             if (savedExpenses) {
-                expenses = JSON.parse(savedExpenses);
-                renderExpenses();
+                try {
+                    expenses = JSON.parse(savedExpenses);
+                    // Validate that expenses is an array
+                    if (!Array.isArray(expenses)) {
+                        expenses = [];
+                    }
+                    renderExpenses();
+                } catch (e) {
+                    console.error('Failed to parse saved expenses:', e);
+                    expenses = [];
+                }
             }
             
             if (savedSalary) {
@@ -302,15 +311,38 @@
                 return;
             }
 
-            expenseList.innerHTML = expenses.map((expense, index) => `
-                <li class="expense-item">
-                    <div class="expense-info">
-                        <div class="expense-name">${expense.name}</div>
-                        <div class="expense-amount">${expense.amount.toFixed(2)} ₽</div>
-                    </div>
-                    <button class="btn-remove" onclick="removeExpense(${index})">Удалить</button>
-                </li>
-            `).join('');
+            // Clear existing list
+            expenseList.innerHTML = '';
+            
+            // Create elements safely without innerHTML to prevent XSS
+            expenses.forEach((expense, index) => {
+                const li = document.createElement('li');
+                li.className = 'expense-item';
+                
+                const expenseInfo = document.createElement('div');
+                expenseInfo.className = 'expense-info';
+                
+                const expenseName = document.createElement('div');
+                expenseName.className = 'expense-name';
+                expenseName.textContent = expense.name; // Safe: uses textContent
+                
+                const expenseAmount = document.createElement('div');
+                expenseAmount.className = 'expense-amount';
+                expenseAmount.textContent = expense.amount.toFixed(2) + ' ₽'; // Safe: uses textContent
+                
+                expenseInfo.appendChild(expenseName);
+                expenseInfo.appendChild(expenseAmount);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'btn-remove';
+                removeBtn.textContent = 'Удалить';
+                removeBtn.onclick = function() { removeExpense(index); };
+                
+                li.appendChild(expenseInfo);
+                li.appendChild(removeBtn);
+                
+                expenseList.appendChild(li);
+            });
         }
 
         // Update results
