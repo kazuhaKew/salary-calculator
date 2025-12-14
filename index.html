@@ -306,13 +306,16 @@
         function renderExpenses() {
             const expenseList = document.getElementById('expenseList');
             
+            // Clear existing list safely
+            expenseList.replaceChildren();
+            
             if (expenses.length === 0) {
-                expenseList.innerHTML = '<li class="empty-message">Расходы не добавлены</li>';
+                const li = document.createElement('li');
+                li.className = 'empty-message';
+                li.textContent = 'Расходы не добавлены';
+                expenseList.appendChild(li);
                 return;
             }
-
-            // Clear existing list
-            expenseList.innerHTML = '';
             
             // Create elements safely without innerHTML to prevent XSS
             expenses.forEach((expense, index) => {
